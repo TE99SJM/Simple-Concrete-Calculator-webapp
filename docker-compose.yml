@@ -1,0 +1,12 @@
+services:
+  concrete-calculator:
+    build: .
+    container_name: concrete-calculator
+    restart: unless-stopped
+    ports:
+      - "3010:3010"
+    volumes:
+      - concrete_calculator_data:/app/data
+
+volumes:
+  concrete_calculator_data:

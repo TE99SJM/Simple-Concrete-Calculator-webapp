@@ -1,0 +1,1246 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ customer['name'] }} · Concrete Calculator
+{% endblock %}
+
+
+{% block content %}
+
+<div class="calculator-layout">
+
+
+    <!-- =====================================================
+         CALCULATOR
+         Desktop: LEFT
+         Mobile: TOP
+         ===================================================== -->
+
+    <section class="card calculator-panel">
+
+        <div class="panel-header">
+
+            <div>
+                <p class="eyebrow">Calculator</p>
+
+                {% if selected_section %}
+                    <h2>
+                        Section {{ selected_section['section_number'] }}
+                    </h2>
+                {% else %}
+                    <h2>Concrete Calculator</h2>
+                {% endif %}
+            </div>
+
+        </div>
+
+
+        {% if selected_section %}
+
+        <form
+            method="post"
+            action="{{ url_for(
+                'save_section',
+                customer_id=customer['id'],
+                section_id=selected_section['id']
+            ) }}"
+            class="calculator-form"
+        >
+
+
+            <!-- LENGTH -->
+
+            <div class="input-group">
+
+                <label for="length">
+                    Length
+                </label>
+
+                <div class="input-with-unit">
+
+                    <input
+                        id="length"
+                        name="length"
+                        type="number"
+                        step="any"
+                        min="0"
+                        inputmode="decimal"
+                        value="{{ selected_section['length'] }}"
+                        required
+                    >
+
+                    <span>ft</span>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- WIDTH -->
+
+            <div class="input-group">
+
+                <label for="width">
+                    Width
+                </label>
+
+                <div class="input-with-unit">
+
+                    <input
+                        id="width"
+                        name="width"
+                        type="number"
+                        step="any"
+                        min="0"
+                        inputmode="decimal"
+                        value="{{ selected_section['width'] }}"
+                        required
+                    >
+
+                    <span>ft</span>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- THICKNESS -->
+
+            <div class="input-group">
+
+                <label for="thickness">
+                    Thickness
+                </label>
+
+                <div class="input-with-unit">
+
+                    <input
+                        id="thickness"
+                        name="thickness"
+                        type="number"
+                        step="any"
+                        min="0"
+                        inputmode="decimal"
+                        value="{{ selected_section['thickness'] }}"
+                        required
+                    >
+
+                    <span>in</span>
+
+                </div>
+
+            </div>
+
+
+
+            <button
+                type="submit"
+                class="primary-btn calculate-button"
+            >
+                Calculate & Save
+            </button>
+
+
+        </form>
+
+
+
+        <!-- =================================================
+             SELECTED SECTION RESULTS
+             ================================================= -->
+
+        <div class="section-results">
+
+
+            <div class="result-main">
+
+                <span class="result-label">
+                    Concrete Estimate
+                </span>
+
+                <strong>
+                    {{ "%.1f"|format(selected_section['result']) }}
+                    yd³
+                </strong>
+
+                <small>
+                    Includes +1 cubic yard
+                </small>
+
+            </div>
+
+
+
+            <div class="rebar-grid">
+
+
+                <div class="rebar-result">
+
+                    <span>
+                        Rebar Widthwise
+                    </span>
+
+                    <strong>
+                        {{ selected_section['rebar_widthwise'] }}
+                    </strong>
+
+                    <small>
+                        pieces
+                    </small>
+
+                </div>
+
+
+
+                <div class="rebar-result">
+
+                    <span>
+                        Rebar Lengthwise
+                    </span>
+
+                    <strong>
+                        {{ selected_section['rebar_lengthwise'] }}
+                    </strong>
+
+                    <small>
+                        pieces
+                    </small>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        {% else %}
+
+
+        <div class="empty-panel">
+
+            <h3>No Section Selected</h3>
+
+            <p>
+                Add a section to begin calculating concrete
+                and rebar.
+            </p>
+
+        </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+
+    <!-- =====================================================
+         CUSTOMER
+         Desktop: CENTER
+         Mobile: SECOND
+         ===================================================== -->
+
+    <section class="card customer-panel">
+
+
+        <div class="panel-header">
+
+            <div>
+
+                <p class="eyebrow">
+                    Customer
+                </p>
+
+                <h2>
+                    {{ customer['name'] }}
+                </h2>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- CUSTOMER DROPDOWN -->
+
+        <div class="customer-selector">
+
+            <label for="customer-select">
+                Select Customer
+            </label>
+
+
+            <select
+                id="customer-select"
+                onchange="
+                    if (this.value) {
+                        window.location.href=this.value;
+                    }
+                "
+            >
+
+                {% for item in customers %}
+
+                <option
+                    value="{{ url_for(
+                        'customer',
+                        customer_id=item['id']
+                    ) }}"
+
+                    {% if item['id'] == customer['id'] %}
+                        selected
+                    {% endif %}
+                >
+
+                    {{ item['name'] }}
+
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+
+        <!-- =================================================
+             CUSTOMER TOTAL
+             Directly underneath customer dropdown
+             ================================================= -->
+
+        <div class="customer-summary">
+
+
+            <div class="summary-main">
+
+                <span>
+                    Total Concrete
+                </span>
+
+                <strong>
+                    {{ "%.1f"|format(summary['total_result']) }}
+                    yd³
+                </strong>
+
+            </div>
+
+
+
+            <div class="section-count">
+
+                {{ summary['section_count'] }}
+
+                section{% if summary['section_count'] != 1 %}s{% endif %}
+
+            </div>
+
+
+
+            <div class="summary-divider"></div>
+
+
+
+            <div class="summary-heading">
+                Total Rebar
+            </div>
+
+
+
+            <div class="summary-row">
+
+                <span>
+                    Widthwise
+                </span>
+
+                <strong>
+                    {{ summary['total_rebar_widthwise'] }}
+                </strong>
+
+            </div>
+
+
+
+            <div class="summary-row">
+
+                <span>
+                    Lengthwise
+                </span>
+
+                <strong>
+                    {{ summary['total_rebar_lengthwise'] }}
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+
+        <a
+            href="{{ url_for('new_customer') }}"
+            class="secondary-btn new-customer-button"
+        >
+            + New Customer
+        </a>
+
+
+    </section>
+
+
+
+    <!-- =====================================================
+         SECTIONS
+         Desktop: RIGHT
+         Mobile: BOTTOM
+         ===================================================== -->
+
+    <section class="card sections-panel">
+
+
+        <div class="panel-header">
+
+            <div>
+
+                <p class="eyebrow">
+                    Sections
+                </p>
+
+                <h2>
+                    Concrete Sections
+                </h2>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ADD SECTION -->
+
+        <form
+            method="post"
+            action="{{ url_for(
+                'new_section',
+                customer_id=customer['id']
+            ) }}"
+        >
+
+            <button
+                type="submit"
+                class="primary-btn add-section-button"
+            >
+                + Add Section
+            </button>
+
+        </form>
+
+
+
+        {% if sections %}
+
+
+        <!-- SECTION DROPDOWN -->
+
+        <div class="section-selector">
+
+            <label for="section-select">
+                Select Section
+            </label>
+
+
+            <select
+                id="section-select"
+                onchange="
+                    if (this.value) {
+                        window.location.href=this.value;
+                    }
+                "
+            >
+
+                {% for section in sections %}
+
+                <option
+                    value="{{ url_for(
+                        'customer',
+                        customer_id=customer['id'],
+                        section_id=section['id']
+                    ) }}"
+
+                    {% if
+                        selected_section
+                        and section['id'] == selected_section['id']
+                    %}
+                        selected
+                    {% endif %}
+                >
+
+                    Section {{ section['section_number'] }}
+
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+
+        <!-- SECTION LIST -->
+
+        <div class="section-list">
+
+
+            {% for section in sections %}
+
+
+            <a
+                href="{{ url_for(
+                    'customer',
+                    customer_id=customer['id'],
+                    section_id=section['id']
+                ) }}"
+
+                class="
+                    section-item
+
+                    {% if
+                        selected_section
+                        and section['id'] == selected_section['id']
+                    %}
+                        active
+                    {% endif %}
+                "
+            >
+
+
+                <div>
+
+                    <strong>
+                        Section {{ section['section_number'] }}
+                    </strong>
+
+                    <small>
+
+                        {{ section['length'] }} ×
+                        {{ section['width'] }} ×
+                        {{ section['thickness'] }}
+
+                    </small>
+
+                </div>
+
+
+                <span>
+                    {{ "%.1f"|format(section['result']) }}
+                    yd³
+                </span>
+
+
+            </a>
+
+
+            {% endfor %}
+
+
+        </div>
+
+
+        {% else %}
+
+
+        <div class="empty-panel">
+
+            <h3>No Sections</h3>
+
+            <p>
+                Add the first concrete section for this customer.
+            </p>
+
+        </div>
+
+
+        {% endif %}
+
+
+    </section>
+
+
+</div>
+
+
+
+<style>
+
+/* ==========================================================
+   MAIN LAYOUT
+
+   DESKTOP
+   Calculator | Customer | Sections
+
+   MOBILE
+   Calculator
+   Customer
+   Sections
+   ========================================================== */
+
+
+.calculator-layout {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(320px, 1.15fr)
+        minmax(260px, .85fr)
+        minmax(300px, 1fr);
+
+    gap: 18px;
+
+    align-items: start;
+
+}
+
+
+
+/* ==========================================================
+   PANELS
+   ========================================================== */
+
+
+.calculator-panel {
+
+    grid-column: 1;
+
+}
+
+
+.customer-panel {
+
+    grid-column: 2;
+
+}
+
+
+.sections-panel {
+
+    grid-column: 3;
+
+}
+
+
+.panel-header {
+
+    margin-bottom: 20px;
+
+}
+
+
+.panel-header h2 {
+
+    margin: 0;
+
+}
+
+
+.eyebrow {
+
+    margin-bottom: 5px;
+
+}
+
+
+
+/* ==========================================================
+   CALCULATOR INPUTS
+   ========================================================== */
+
+
+.calculator-form {
+
+    display: grid;
+
+    gap: 15px;
+
+}
+
+
+.input-group label {
+
+    display: block;
+
+    margin-bottom: 7px;
+
+}
+
+
+.input-with-unit {
+
+    display: grid;
+
+    grid-template-columns: 1fr 50px;
+
+}
+
+
+.input-with-unit input {
+
+    border-radius: 12px 0 0 12px;
+
+}
+
+
+.input-with-unit span {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border:
+
+        1px solid
+        #cfd4dc;
+
+    border-left: 0;
+
+    border-radius: 0 12px 12px 0;
+
+    background: var(--surface-alt);
+
+    color: var(--muted);
+
+    font-weight: 700;
+
+}
+
+
+.calculate-button {
+
+    width: 100%;
+
+    margin-top: 4px;
+
+}
+
+
+
+/* ==========================================================
+   SECTION CALCULATION RESULTS
+   ========================================================== */
+
+
+.section-results {
+
+    margin-top: 20px;
+
+}
+
+
+.result-main {
+
+    padding: 20px;
+
+    border-radius: 16px;
+
+    background: var(--accent-soft);
+
+    color: var(--accent-dark);
+
+    text-align: center;
+
+}
+
+
+.result-label {
+
+    display: block;
+
+    font-size: .8rem;
+
+    font-weight: 800;
+
+    text-transform: uppercase;
+
+    letter-spacing: .06em;
+
+}
+
+
+.result-main strong {
+
+    display: block;
+
+    margin: 6px 0;
+
+    font-size: 2rem;
+
+}
+
+
+.result-main small {
+
+    color: var(--muted);
+
+}
+
+
+.rebar-grid {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 10px;
+
+    margin-top: 10px;
+
+}
+
+
+.rebar-result {
+
+    padding: 14px 10px;
+
+    border:
+
+        1px solid
+        var(--line);
+
+    border-radius: 14px;
+
+    background: var(--surface-alt);
+
+    text-align: center;
+
+}
+
+
+.rebar-result span {
+
+    display: block;
+
+    color: var(--muted);
+
+    font-size: .78rem;
+
+    font-weight: 700;
+
+}
+
+
+.rebar-result strong {
+
+    display: block;
+
+    margin: 5px 0 2px;
+
+    font-size: 1.45rem;
+
+}
+
+
+.rebar-result small {
+
+    color: var(--muted);
+
+}
+
+
+
+/* ==========================================================
+   CUSTOMER
+   ========================================================== */
+
+
+.customer-selector {
+
+    margin-bottom: 12px;
+
+}
+
+
+.customer-summary {
+
+    padding: 20px;
+
+    margin-bottom: 14px;
+
+    border-radius: 16px;
+
+    background: var(--accent-soft);
+
+    color: var(--accent-dark);
+
+}
+
+
+.summary-main {
+
+    text-align: center;
+
+}
+
+
+.summary-main span {
+
+    display: block;
+
+    font-size: .8rem;
+
+    font-weight: 800;
+
+    text-transform: uppercase;
+
+    letter-spacing: .06em;
+
+}
+
+
+.summary-main strong {
+
+    display: block;
+
+    margin-top: 5px;
+
+    font-size: 2rem;
+
+}
+
+
+.section-count {
+
+    margin-top: 5px;
+
+    color: var(--muted);
+
+    text-align: center;
+
+    font-size: .85rem;
+
+    font-weight: 700;
+
+}
+
+
+.summary-divider {
+
+    height: 1px;
+
+    margin: 16px 0;
+
+    background:
+
+        rgba(
+            49,
+            91,
+            69,
+            .18
+        );
+
+}
+
+
+.summary-heading {
+
+    margin-bottom: 7px;
+
+    color: var(--muted);
+
+    font-size: .75rem;
+
+    font-weight: 800;
+
+    text-transform: uppercase;
+
+    letter-spacing: .06em;
+
+}
+
+
+.summary-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 7px 0;
+
+}
+
+
+.summary-row + .summary-row {
+
+    border-top:
+
+        1px solid
+        rgba(
+            49,
+            91,
+            69,
+            .15
+        );
+
+}
+
+
+.new-customer-button {
+
+    width: 100%;
+
+}
+
+
+
+/* ==========================================================
+   SECTIONS
+   ========================================================== */
+
+
+.add-section-button {
+
+    width: 100%;
+
+}
+
+
+.section-selector {
+
+    margin-top: 18px;
+
+}
+
+
+.section-list {
+
+    display: grid;
+
+    gap: 8px;
+
+    margin-top: 14px;
+
+}
+
+
+.section-item {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding: 13px;
+
+    border:
+
+        1px solid
+        var(--line);
+
+    border-radius: 12px;
+
+    background: var(--surface-alt);
+
+    color: var(--text);
+
+    text-decoration: none;
+
+}
+
+
+.section-item:hover {
+
+    border-color: var(--accent);
+
+}
+
+
+.section-item.active {
+
+    border-color: var(--accent);
+
+    background: var(--accent-soft);
+
+}
+
+
+.section-item strong {
+
+    display: block;
+
+}
+
+
+.section-item small {
+
+    display: block;
+
+    margin-top: 4px;
+
+    color: var(--muted);
+
+}
+
+
+.section-item > span {
+
+    white-space: nowrap;
+
+    font-weight: 800;
+
+}
+
+
+
+/* ==========================================================
+   EMPTY STATE
+   ========================================================== */
+
+
+.empty-panel {
+
+    padding: 40px 15px;
+
+    text-align: center;
+
+    color: var(--muted);
+
+}
+
+
+.empty-panel h3 {
+
+    margin-bottom: 7px;
+
+    color: var(--text);
+
+}
+
+
+.empty-panel p {
+
+    margin: 0;
+
+}
+
+
+
+/* ==========================================================
+   DESKTOP
+   ========================================================== */
+
+
+@media (min-width: 761px) {
+
+    .customer-panel {
+
+        position: sticky;
+
+        top: 12px;
+
+    }
+
+}
+
+
+
+/* ==========================================================
+   IPHONE / MOBILE
+
+   Calculator
+   ↓
+   Customer + totals
+   ↓
+   Sections
+   ========================================================== */
+
+
+@media (max-width: 760px) {
+
+    .calculator-layout {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 12px;
+
+    }
+
+
+    .calculator-panel {
+
+        order: 1;
+
+        width: 100%;
+
+    }
+
+
+    .customer-panel {
+
+        order: 2;
+
+        width: 100%;
+
+    }
+
+
+    .sections-panel {
+
+        order: 3;
+
+        width: 100%;
+
+    }
+
+
+    .rebar-grid {
+
+        grid-template-columns:
+            1fr 1fr;
+
+    }
+
+
+    .result-main strong,
+    .summary-main strong {
+
+        font-size: 1.75rem;
+
+    }
+
+}
+
+
+
+/* ==========================================================
+   VERY SMALL IPHONES
+   ========================================================== */
+
+
+@media (max-width: 390px) {
+
+    .rebar-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}
+
+</style>
+
+
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}New Customer · Concrete Calculator{% endblock %}
+
+{% block content %}
+<section class="card form-card centered-card">
+    <div class="card-heading">
+        <div>
+            <p class="eyebrow">Customer setup</p>
+            <h2>Create a customer</h2>
+        </div>
+    </div>
+
+    <form method="post" class="stack-form">
+        <label for="name">Customer name</label>
+        <input
+            id="name"
+            name="name"
+            type="text"
+            placeholder="Customer name"
+            autocomplete="off"
+            required
+        >
+        <button type="submit" class="primary-btn">Create Customer</button>
+    </form>
+
+    {% if customers %}
+    <div class="divider"></div>
+    <div>
+        <label for="existing-customer">Open existing customer</label>
+        <select
+            id="existing-customer"
+            onchange="if (this.value) window.location.href=this.value"
+        >
+            <option value="">Select customer…</option>
+            {% for customer in customers %}
+                <option value="{{ url_for('customer', customer_id=customer['id']) }}">
+                    {{ customer['name'] }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
